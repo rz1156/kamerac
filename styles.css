@@ -1,0 +1,497 @@
+/* ==========================================================================
+   CYBER HUD INTERFACE RESET & CORE VARIABLES
+   ========================================================================== */
+:root {
+  --bg-dark: #070709;
+  --neon-white: #ffffff;
+  --neon-white-alpha: rgba(255, 255, 255, 0.8);
+  --neon-glow-color: rgba(255, 255, 255, 0.4);
+  --cyber-green: #00ff66;
+  --cyber-red: #ff3333;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --font-hud: 'Orbitron', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: var(--font-hud);
+  color: var(--neon-white);
+}
+
+/* ==========================================================================
+   ANIMATED GRADIENT & PARTICLE BACKGROUND
+   ========================================================================== */
+#bgParticles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  background: radial-gradient(circle at 50% 50%, #141419 0%, #070709 100%);
+  will-change: transform;
+}
+
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3e%3cfilter id='noise'%3e%3cfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3e%3c/filter%3e%3crect width='100%25' height='100%25' filter='url(%23noise)'/%3e%3c/svg%3e");
+}
+
+.cyber-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ==========================================================================
+   GLASSMORPHISM CARD ARCHITECTURE
+   ========================================================================== */
+.glass-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 48px 32px;
+  text-align: center;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 255, 255, 0.02);
+  transform: scale(0.95);
+  opacity: 0;
+  transition: var(--transition-smooth);
+  will-change: transform, opacity;
+  display: none;
+}
+
+.glass-card.active {
+  display: block;
+  transform: scale(1);
+  opacity: 1;
+}
+
+.card-glow-glow {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+  pointer-events: none;
+  animation: floatLight 8s ease-in-out infinite alternate;
+}
+
+@keyframes floatLight {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(2%, 4%) scale(1.05); }
+}
+
+.logo-circle {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 24px auto;
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  position: relative;
+  animation: spinClockwise 20s linear infinite;
+}
+
+.logo-circle::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border: 2px solid var(--neon-white);
+  border-radius: 50%;
+}
+
+@keyframes spinClockwise {
+  100% { transform: rotate(360deg); }
+}
+
+.cyber-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 12px var(--neon-glow-color);
+}
+
+.cyber-subtitle {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 40px;
+}
+
+/* ==========================================================================
+   PREMIUM BUTTON SYSTEM
+   ========================================================================== */
+.cyber-btn {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 18px 40px;
+  border-radius: 12px;
+  color: var(--neon-white);
+  font-family: var(--font-hud);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+  box-shadow: 0 0 0 transparent;
+}
+
+.cyber-btn:hover {
+  transform: scale(1.03);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.25);
+  text-shadow: 0 0 8px #fff;
+}
+
+.cyber-btn:active {
+  transform: scale(0.98);
+}
+
+/* Ripple Mock System via scale layer */
+.cyber-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 0;
+  padding-bottom: 120%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+}
+
+.cyber-btn:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   LOADING HUD INTERFACE
+   ========================================================================== */
+.hud-loading-container {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.hud-loader-box {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 32px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.terminal-text {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  height: 24px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--neon-white);
+  box-shadow: 0 0 10px var(--neon-white);
+  transition: width 0.1s linear;
+}
+
+/* ==========================================================================
+   CAMERA & AI HUD SYSTEM INTERFACE
+   ========================================================================== */
+.camera-interface-container {
+  width: 100%;
+  max-width: 1120px;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  will-change: transform, opacity;
+  animation: fadeInFrame 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInFrame {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.9);
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0; /* Driven to 1 via JS fade-in */
+  transform: scaleX(-1); /* Mirror display naturally */
+  transition: opacity 0.8s ease-out;
+}
+
+#arCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  transform: scaleX(-1); /* Keep canvas in absolute sync with mirrored video */
+  pointer-events: none;
+}
+
+/* HUD Layer Matrix overlays */
+.hud-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.overlay-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.overlay-scanline {
+  background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.04) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 4px, 6px 100%;
+}
+
+/* HUD Modules */
+.hud-module {
+  position: absolute;
+  z-index: 6;
+  background: rgba(7, 7, 9, 0.4);
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  pointer-events: none;
+  animation: hudBreathing 4s ease-in-out infinite;
+}
+
+@keyframes hudBreathing {
+  0%, 100% { opacity: 0.85; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+
+.top-left { top: 20px; left: 20px; }
+.top-right { top: 20px; right: 20px; text-align: right; }
+.bottom-left { bottom: 20px; left: 20px; }
+.bottom-right { bottom: 20px; right: 20px; text-align: right; }
+
+/* Text Utilities inside HUD */
+.font-mono { font-family: var(--font-mono); }
+.small { font-size: 0.75rem; letter-spacing: 1px; }
+.text-glow { text-shadow: 0 0 8px var(--neon-glow-color); }
+.text-muted { color: rgba(255, 255, 255, 0.4); }
+.text-green { color: var(--cyber-green); text-shadow: 0 0 8px rgba(0,255,102,0.4); }
+.tracking-tag { margin-top: 4px; letter-spacing: 1px; opacity: 0.7; }
+
+.rec-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--cyber-red);
+  border-radius: 50%;
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 8px var(--cyber-red); }
+}
+
+.hud-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 2px;
+  margin-bottom: 2px;
+}
+
+.hud-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* HUD Structural Frame Corners */
+.hud-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--neon-white);
+  z-index: 6;
+  pointer-events: none;
+}
+.top-left-c { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.top-right-c { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.bottom-left-c { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.bottom-right-c { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+/* Central Reticle Crosshair */
+.hud-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.hud-crosshair::before, .hud-crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--neon-white);
+}
+
+.hud-crosshair::before { top: 19px; left: 0; width: 40px; height: 2px; }
+.hud-crosshair::after { left: 19px; top: 0; width: 2px; height: 40px; }
+
+/* ==========================================================================
+   ERROR HARDWARE PANEL OVERLAY
+   ========================================================================== */
+.error-panel-container {
+  max-width: 440px;
+  width: 100%;
+}
+
+.error-box {
+  background: rgba(20, 10, 10, 0.2);
+  border: 1px solid rgba(255, 51, 51, 0.2);
+  padding: 40px 32px;
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.error-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.error-desc {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.error-retry-btn {
+  background: transparent;
+  border: 1px solid var(--cyber-red);
+  color: var(--cyber-red);
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-family: var(--font-hud);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.error-retry-btn:hover {
+  background: var(--cyber-red);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+}
+
+/* ==========================================================================
+   UTILITY HELPER CLASSES
+   ========================================================================== */
+.hidden {
+  display: none !important;
+  opacity: 0;
+}
+
+/* Responsive Adaptive Sizing overrides */
+@media (max-width: 768px) {
+  .camera-interface-container {
+    aspect-ratio: 4 / 3; /* Optimize mobile viewing matrix */
+  }
+  .hud-module {
+    padding: 6px 10px;
+  }
+  .hud-value { font-size: 1rem; }
+  .cyber-title { font-size: 1.8rem; }
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Camera Interface - AI HUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <canvas id="bgParticles"></canvas>
+  <div class="grain-overlay"></div>
+
+  <main class="cyber-container">
+    
+    <div id="initialCard" class="glass-card active">
+      <div class="card-glow-glow"></div>
+      <div class="card-header">
+        <div class="cyber-logo">
+          <div class="logo-circle"></div>
+        </div>
+        <h1 class="cyber-title">NEXUS AI</h1>
+        <p class="cyber-subtitle">VISION INTERFACE INTEGRATION</p>
+      </div>
+      
+      <div class="card-body">
+        <button id="btnOpenCamera" class="cyber-btn">
+          <span class="btn-glitch-bg"></span>
+          <span class="btn-text">📷 OPEN CAMERA</span>
+          <span class="btn-ripple"></span>
+        </button>
+      </div>
+    </div>
+
+    <div id="loadingHud" class="hud-loading-container hidden">
+      <div class="hud-loader-box">
+        <div class="hud-scanner-line"></div>
+        <div class="terminal-text" id="loadingText">INITIALIZING SYSTEM...</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cameraInterface" class="camera-interface-container hidden">
+      <div class="video-wrapper">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="arCanvas"></canvas>
+
+        <div class="hud-layer overlay-grid"></div>
+        <div class="hud-layer overlay-scanline"></div>
+        
+        <div class="hud-module top-left">
+          <div class="rec-indicator">
+            <span class="rec-dot"></span><span>REC</span>
+          </div>
+          <div class="hud-text small font-mono">SYS.LOC // TERMINAL_0A</div>
+        </div>
+
+        <div class="hud-module top-right">
+          <div class="hud-text font-mono text-glow" id="hudFps">FPS: 00</div>
+          <div class="hud-text small font-mono text-muted">AI_MODEL_V2.4</div>
+        </div>
+
+        <div class="hud-module bottom-left">
+          <div class="hud-label">STATUS</div>
+          <div class="hud-value font-mono text-green" id="hudStatus">ACTIVE</div>
+          <div class="hud-text small font-mono tracking-tag">AI ENGINE STABLE</div>
+        </div>
+
+        <div class="hud-module bottom-right">
+          <div class="hud-label">GESTURE METRICS</div>
+          <div class="hud-value font-mono" id="hudGesture">NONE</div>
+          <div class="hud-text small font-mono tracking-tag" id="hudTrackingState">TRACKING IDLE</div>
+        </div>
+
+        <div class="hud-crosshair"></div>
+        <div class="hud-corner top-left-c"></div>
+        <div class="hud-corner top-right-c"></div>
+        <div class="hud-corner bottom-left-c"></div>
+        <div class="hud-corner bottom-right-c"></div>
+      </div>
+    </div>
+
+    <div id="errorPanel" class="error-panel-container hidden">
+      <div class="error-box">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">Camera Permission Required</h2>
+        <p class="error-desc">To load neural interfaces and hand mapping systems, camera access must be explicitly authorized.</p>
+        <button id="btnTryAgain" class="error-retry-btn">Try Again</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

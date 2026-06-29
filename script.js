@@ -32,13 +32,12 @@ class CyberCameraApp {
     
     // Engine State Vectors
     this.particles = [];
-    this.fingertipTrails = {}; // Structure: { fingerIndex: [{x, y, alpha}] }
+    this.fingertipTrails = {}; 
     this.lastFrameTime = performance.now();
     this.fpsCount = 0;
-    this.fpsDisplayTimer = 0;
     
     // Cinematic Canvas FX Transitions
-    this.blurIntensity = 0; // Standardized range [0 to 1]
+    this.blurIntensity = 0; 
     this.currentGesture = "NONE";
     this.mediaPipeHands = null;
 
@@ -48,7 +47,6 @@ class CyberCameraApp {
 
   /**
    * BACKGROUND FIELD GENERATOR
-   * Renders lightweight deep ambient spatial vectors behind interface layer
    */
   initBackgroundEngine() {
     const resizeBg = () => {
@@ -58,7 +56,6 @@ class CyberCameraApp {
     window.addEventListener('resize', resizeBg);
     resizeBg();
 
-    // Population array
     this.particles = Array.from({ length: 45 }, () => ({
       x: Math.random() * this.bgCanvas.width,
       y: Math.random() * this.bgCanvas.height,
@@ -69,8 +66,6 @@ class CyberCameraApp {
 
     const renderBgLoop = () => {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
-      this.bgCtx.fillStyle = 'rgba(255, 255, 255, ';
-
       this.particles.forEach(p => {
         p.y += p.speedY;
         if (p.y < 0) {
@@ -82,7 +77,6 @@ class CyberCameraApp {
         this.bgCtx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
         this.bgCtx.fill();
       });
-
       requestAnimationFrame(renderBgLoop);
     };
     requestAnimationFrame(renderBgLoop);
@@ -91,18 +85,10 @@ class CyberCameraApp {
   bindActionListeners() {
     this.dom.btnOpenCamera.addEventListener('click', () => this.bootHardwareSequence());
     this.dom.btnTryAgain.addEventListener('click', () => {
-      this.transitionUIPanel(this.dom.errorPanel, this.dom.initialCard);
+      this.dom.errorPanel.classList.add('hidden');
+      this.dom.initialCard.classList.remove('hidden');
+      this.dom.initialCard.classList.add('active');
     });
-  }
-
-  /**
-   * UI TRANSITION INTERPOLATOR
-   */
-  transitionUIPanel(fromPanel, toPanel) {
-    fromPanel.classList.add('hidden');
-    fromPanel.classList.remove('active');
-    toPanel.classList.remove('hidden');
-    setTimeout(() => toPanel.classList.add('active'), 50);
   }
 
   /**
@@ -110,13 +96,14 @@ class CyberCameraApp {
    */
   async bootHardwareSequence() {
     this.dom.initialCard.classList.add('hidden');
+    this.dom.initialCard.classList.remove('active');
     this.dom.loadingHud.classList.remove('hidden');
 
     const executionSteps = [
-      { text: "INITIALIZING CAMERA...", duration: 600 },
-      { text: "CONNECTING DEVICE...", duration: 700 },
-      { text: "LOADING AI MODEL...", duration: 900 },
-      { text: "CALIBRATING HAND TRACKER...", duration: 600 },
+      { text: "INITIALIZING CAMERA...", duration: 500 },
+      { text: "CONNECTING DEVICE...", duration: 500 },
+      { text: "LOADING AI MODEL...", duration: 700 },
+      { text: "CALIBRATING HAND TRACKER...", duration: 500 },
       { text: "READY", duration: 300 }
     ];
 
@@ -137,7 +124,7 @@ class CyberCameraApp {
   }
 
   /**
-   * WEBCAM STREAM ROUTING & NEURAL MODELS INSTANTIATION
+   * WEBCAM STREAM ROUTING
    */
   async startHardwareStreaming() {
     try {
@@ -169,13 +156,12 @@ class CyberCameraApp {
   }
 
   syncCanvasDimensions() {
-    // Dynamic matching of actual layout boundaries for overlay projection mapping
     this.dom.arCanvas.width = this.dom.webcam.clientWidth;
     this.dom.arCanvas.height = this.dom.webcam.clientHeight;
   }
 
   /**
-   * MEDIAPIPE VISION RUNTIME TOPOLOGY INFRASTRUCTURE
+   * MEDIAPIPE VISION RUNTIME INFRASTRUCTURE
    */
   initNeuralEnginePipeline() {
     this.mediaPipeHands = new Hands({
@@ -185,13 +171,12 @@ class CyberCameraApp {
     this.mediaPipeHands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
     });
 
     this.mediaPipeHands.onResults((results) => this.renderGraphicsPipeline(results));
 
-    // High performance integration via MediaPipe Camera Helper library module
     const streamSource = new Camera(this.dom.webcam, {
       onFrame: async () => {
         await this.mediaPipeHands.send({ image: this.dom.webcam });
@@ -204,92 +189,71 @@ class CyberCameraApp {
   }
 
   /**
-   * HIGH-PERFORMANCE RENDERING PIPELINE & POST PROCESSING FX MATRIX
+   * RENDERING PIPELINE & GRAPHICS MATRIX
    */
   renderGraphicsPipeline(results) {
     const width = this.dom.arCanvas.width;
     const height = this.dom.arCanvas.height;
 
-    // Track frame rate execution speed
     this.calculateRuntimeFps();
-
     this.ctx.clearRect(0, 0, width, height);
 
-    // Gestures processing tracking vector switch
-    let handDetectedThisFrame = false;
-
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-      handDetectedThisFrame = true;
       const points = results.multiHandLandmarks[0];
       
-      this.dom.dom.hudTrackingState.innerText = "TRACKING DETECTED";
-      this.dom.dom.hudTrackingState.classList.remove('text-muted');
-      this.dom.dom.hudTrackingState.classList.add('text-green');
+      this.dom.hudTrackingState.innerText = "TRACKING DETECTED";
+      this.dom.hudTrackingState.className = "hud-text small font-mono text-green";
 
-      // Process raw positions and output current structural state matching algorithms
       this.currentGesture = this.parseGeometricGesture(points);
-      
-      // Update UI matching structural parameters
       this.updateHudMetrics();
-
-      // Core Geometric Canvas drawing pipeline commands
       this.drawNeuralSkeleton(points, width, height);
       this.renderFingertipFX(points, width, height);
     } else {
       this.currentGesture = "NONE";
       this.updateHudMetrics();
-      this.dom.dom.hudTrackingState.innerText = "TRACKING IDLE";
-      this.dom.dom.hudTrackingState.classList.remove('text-green');
-      this.dom.dom.hudTrackingState.classList.add('text-muted');
+      this.dom.hudTrackingState.innerText = "TRACKING IDLE";
+      this.dom.hudTrackingState.className = "hud-text small font-mono text-muted";
     }
 
-    // Dynamic blur execution parameters tracking state 
     this.computeCinematicEffectsTransitions(width, height);
   }
 
   /**
-   * COMPUTATIONAL GEOMETRIC GESTURE INTERPOLATION MATRIX
-   * Processes hand orientation positions algorithmically
+   * ALGORITMA DETEKSI JARI (GESTURE)
    */
   parseGeometricGesture(lm) {
-    // Boolean checks representing finger extended orientation states
     const checkExtended = (tipIdx, pipIdx) => lm[tipIdx].y < lm[pipIdx].y;
     
     const indexExtended = checkExtended(8, 6);
     const middleExtended = checkExtended(12, 10);
     const ringExtended = checkExtended(16, 14);
     const pinkyExtended = checkExtended(20, 18);
-    // Thumb rule uses spatial horizontal distance checks across coordinate space mappings
     const thumbExtended = Math.abs(lm[4].x - lm[2].x) > 0.04;
 
-    // 1. PEACE SIGN (✌) -> Index and Middle extended. Ring and Pinky completely closed
+    // 1. GESTURE PEACE (✌)
     if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
       return "PEACE SIGN";
     }
-    // 2. OPEN HAND (✋) -> All fingers extended straight out
-    if (indexExtended && middleExtended && ringExtended && pinkyExtended && thumbExtended) {
-      return "OPEN HAND";
-    }
-    // 3. CLOSED FIST (👊) -> All fingers folded inwards tight
-    if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended && !thumbExtended) {
+    // 2. GESTURE KEPALAN (👊)
+    if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
       return "CLOSED FIST";
     }
-    // 4. INDEX POINTING (☝) -> Only index finger extended straight up
+    // 3. GESTURE TELAPAK TANGAN (✋)
+    if (indexExtended && middleExtended && ringExtended && pinkyExtended) {
+      return "OPEN HAND";
+    }
+    // 4. GESTURE TELUNJUK (☝)
     if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
       return "INDEX EXTENDED";
     }
-    // 5. THUMBS UP (👍) -> Thumb extended out/up, all other fingers closed tight
+    // 5. GESTURE JEMPOL (👍)
     if (thumbExtended && !indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
-      // Confirm thumb is elevated structural position relative to knuckles mapping orientation
       if (lm[4].y < lm[9].y) return "THUMBS UP";
     }
 
     return "NONE";
   }
 
-  /**
-   * HUD METRICS DATA BUS BINDING
-   */
   updateHudMetrics() {
     if (this.currentGesture === "PEACE SIGN") {
       this.dom.hudGesture.innerText = "PEACE DETECTED";
@@ -304,59 +268,41 @@ class CyberCameraApp {
     }
   }
 
-  /**
-   * CORE NEURAL GEOMETRY GRAPHICS PRIMITIVES SKELETON DRAWING
-   */
   drawNeuralSkeleton(landmarks, width, height) {
-    // Array map connecting points sequentially across hand segments
     const connections = [
-      [0,1], [1,2], [2,3], [3,4],       // Thumb
-      [0,5], [5,6], [6,7], [7,8],       // Index Finger
-      [5,9], [9,10], [10,11], [11,12],  // Middle Finger
-      [9,13], [13,14], [14,15], [15,16], // Ring Finger
-      [13,17], [17,18], [18,19], [19,20], // Pinky
-      [0,17] // Palm closing bounding line
+      [0,1], [1,2], [2,3], [3,4],       
+      [0,5], [5,6], [6,7], [7,8],       
+      [5,9], [9,10], [10,11], [11,12],  
+      [9,13], [13,14], [14,15], [15,16], 
+      [13,17], [17,18], [18,19], [19,20], 
+      [0,17] 
     ];
 
     this.ctx.save();
-
-    // Pass 1: Render structural link connections pathways
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    this.ctx.lineWidth = 2;
     
     connections.forEach(([start, end]) => {
       const ptA = landmarks[start];
       const ptB = landmarks[end];
-      
       this.ctx.beginPath();
       this.ctx.moveTo(ptA.x * width, ptA.y * height);
       this.ctx.lineTo(ptB.x * width, ptB.y * height);
       this.ctx.stroke();
     });
 
-    // Pass 2: Draw individual specialized tracking dots mapping joints
     landmarks.forEach((pt) => {
-      const cx = pt.x * width;
-      const cy = pt.y * height;
-
-      // Glow backing node composition circle
-      this.ctx.shadowBlur = 12;
+      this.ctx.shadowBlur = 10;
       this.ctx.shadowColor = '#ffffff';
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      
+      this.ctx.fillStyle = '#ffffff';
       this.ctx.beginPath();
-      this.ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+      this.ctx.arc(pt.x * width, pt.y * height, 4, 0, Math.PI * 2);
       this.ctx.fill();
     });
-
     this.ctx.restore();
   }
 
-  /**
-   * HIGH GRAPHICS QUALITY FINGERTIP TRAIL AND GLOW EFFECTS ENGINE
-   */
   renderFingertipFX(landmarks, width, height) {
-    // MediaPipe Hands endpoint indices tracking array for fingertips
     const tipIndices = [4, 8, 12, 16, 20];
 
     tipIndices.forEach((idx) => {
@@ -364,83 +310,57 @@ class CyberCameraApp {
       const cx = pt.x * width;
       const cy = pt.y * height;
 
-      // Ensure historical arrays exist per active finger mapping
-      if (!this.fingertipTrails[idx]) {
-        this.fingertipTrails[idx] = [];
-      }
+      if (!this.fingertipTrails[idx]) this.fingertipTrails[idx] = [];
+      this.fingertipTrails[idx].push({ x: cx, y: cy });
 
-      // Record position tracking elements
-      this.fingertipTrails[idx].push({ x: cx, y: cy, opacity: 1.0 });
-
-      // Culling tracking list history bounds length threshold
-      if (this.fingertipTrails[idx].length > 15) {
-        this.fingertipTrails[idx].shift();
-      }
+      if (this.fingertipTrails[idx].length > 12) this.fingertipTrails[idx].shift();
 
       this.ctx.save();
-
-      // Render historical coordinate trail trace paths lines
       const activeTrail = this.fingertipTrails[idx];
       if (activeTrail.length > 1) {
         this.ctx.beginPath();
         this.ctx.moveTo(activeTrail[0].x, activeTrail[0].y);
-        
         for (let i = 1; i < activeTrail.length; i++) {
           this.ctx.lineTo(activeTrail[i].x, activeTrail[i].y);
         }
-        
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
         this.ctx.lineWidth = 3;
         this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
         this.ctx.stroke();
       }
 
-      // Draw active premium fingertip overlay glow target circles
-      this.ctx.shadowBlur = 20;
+      this.ctx.shadowBlur = 15;
       this.ctx.shadowColor = '#ffffff';
       this.ctx.fillStyle = '#ffffff';
       this.ctx.beginPath();
-      this.ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+      this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
       this.ctx.fill();
-
       this.ctx.restore();
     });
   }
 
-  /**
-   * GAUSSIAN CINEMATIC ADVANCED CANVAS POST PROCESSOR EFFECT PIPELINE
-   */
   computeCinematicEffectsTransitions(width, height) {
-    const transitionStep = 0.08; // Equivalent to ~300ms transition standard pacing execution
-
-    // Linear interpolation tracking calculations
+    const transitionStep = 0.08;
     if (this.currentGesture === "PEACE SIGN") {
       this.blurIntensity = Math.min(1, this.blurIntensity + transitionStep);
     } else {
       this.blurIntensity = Math.max(0, this.blurIntensity - transitionStep);
     }
 
-    // Apply adjustments using high performance layout modifications
     if (this.blurIntensity > 0) {
-      // Map global compositional filtration styles properties to hardware standard elements
-      const targetBlur = this.blurIntensity * 12; // Max 12px blur radius scaling standard
-      const targetBrightness = 100 - (this.blurIntensity * 25); // Decrease to 75% depth levels
-      const targetContrast = 100 + (this.blurIntensity * 30); // Dynamic elevation scaling boost up to 130%
+      const targetBlur = this.blurIntensity * 12; 
+      const targetBrightness = 100 - (this.blurIntensity * 20); 
+      const targetContrast = 100 + (this.blurIntensity * 25); 
 
-      // Directly update CSS structural properties running underneath video feed mapping tracking
       this.dom.webcam.style.filter = `blur(${targetBlur}px) brightness(${targetBrightness}%) contrast(${targetContrast}%)`;
 
-      // Draw technical cinematic dark vignetting layer curves
       this.ctx.save();
       const vignetteGradient = this.ctx.createRadialGradient(
         width / 2, height / 2, width * 0.3,
         width / 2, height / 2, width * 0.75
       );
-      
       vignetteGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      vignetteGradient.addColorStop(1, `rgba(0, 0, 0, ${this.blurIntensity * 0.65})`);
-      
+      vignetteGradient.addColorStop(1, `rgba(0, 0, 0, ${this.blurIntensity * 0.6})`);
       this.ctx.fillStyle = vignetteGradient;
       this.ctx.fillRect(0, 0, width, height);
       this.ctx.restore();
@@ -449,12 +369,10 @@ class CyberCameraApp {
     }
   }
 
-  /**
-   * PERFORMANCE FPS DIAGNOSTIC DETECTOR RUNTIME MEASUREMENT BUS
-   */
   calculateRuntimeFps() {
     const timeNow = performance.now();
     this.fpsCount++;
+    if (!this.lastFrameTime) this.lastFrameTime = timeNow;
     
     if (timeNow >= this.lastFrameTime + 1000) {
       const trackedFps = Math.round((this.fpsCount * 1000) / (timeNow - this.lastFrameTime));
@@ -465,7 +383,6 @@ class CyberCameraApp {
   }
 }
 
-// System Hardware Boot Sequence Trigger Execution
 document.addEventListener('DOMContentLoaded', () => {
   window.CyberCameraSystemInstance = new CyberCameraApp();
 });
